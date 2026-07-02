@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#E0E6ED">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="15dp">
+
+        <!-- Đồng hồ thời gian thực -->
+        <TextView
+            android:id="@+id/tvDongHo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:gravity="center"
+            android:text="Đang tải thời gian..."
+            android:textColor="#1976D2"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- Khung Chọn Khu Vực (Ép nền dropdown màu trắng) -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_marginBottom="15dp"
+            app:cardBackgroundColor="#FFFFFF"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="6dp">
+
+            <Spinner
+                android:id="@+id/spinnerKhuVuc"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:popupBackground="#FFFFFF"
+                android:spinnerMode="dropdown" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- KHUNG 1: Ảnh Camera -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginBottom="15dp"
+            app:cardBackgroundColor="#FFFFFF"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="6dp">
+            <ImageView
+                android:id="@+id/ivKhuVuc"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/khu_bep_1" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- KHUNG 2: Cảnh báo AI -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvAiWarning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            app:cardBackgroundColor="#E8F5E9"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="6dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="15dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hệ thống AI nhận diện (Khu Bếp 1):"
+                    android:textColor="#000000"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvAiStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:text="Đang tải dữ liệu..."
+                    android:textColor="#4CAF50"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- KHUNG 3: Biểu Đồ Thời Gian Thực -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginBottom="15dp"
+            app:cardBackgroundColor="#FFFFFF"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="6dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <TextView
+                    android:id="@+id/tvChartTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:gravity="center"
+                    android:text="Biểu Đồ Thời Gian Thực (1s/lần)"
+                    android:textColor="#1565C0"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <com.github.mikephil.charting.charts.LineChart
+                    android:id="@+id/lineChart"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- KHUNG 4: Thông số cảm biến -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            app:cardBackgroundColor="#FFFFFF"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="6dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:id="@+id/tvNhietDo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="15dp"
+                    android:text="Nhiệt độ: -- °C"
+                    android:textColor="#000000"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvDoAm"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="15dp"
+                    android:text="Độ ẩm: -- %"
+                    android:textColor="#000000"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvKhiGas"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Khí Gas: --"
+                    android:textColor="#000000"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- KHUNG 5: Điều khiển thiết bị -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:cardBackgroundColor="#FFFFFF"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="6dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <!-- Quạt -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="20dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/ivFan"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:layout_marginEnd="15dp"
+                        android:src="@drawable/quat_thong_gio" />
+
+                    <Switch
+                        android:id="@+id/swQuat"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Quạt Thông Gió"
+                        android:textColor="#000000"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:thumbTint="#2196F3"
+                        android:trackTint="#BBDEFB" />
+                </LinearLayout>
+
+                <!-- Máy hút ẩm -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="25dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/ivDehum"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:layout_marginEnd="15dp"
+                        android:src="@drawable/may_hut_am_off" />
+
+                    <Switch
+                        android:id="@+id/swHutAm"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Máy Hút Ẩm"
+                        android:textColor="#000000"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:thumbTint="#2196F3"
+                        android:trackTint="#BBDEFB" />
+                </LinearLayout>
+
+                <!-- Đèn -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/ivBulb"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_marginEnd="15dp"
+                        android:src="@drawable/ic_bulb" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="5dp"
+                            android:text="Độ sáng đèn chiếu sáng:"
+                            android:textColor="#000000"
+                            android:textStyle="bold" />
+
+                        <SeekBar
+                            android:id="@+id/sbDen"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:max="100"
+                            android:progress="0"
+                            android:progressTint="#FFC107"
+                            android:thumbTint="#FF9800" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+    </LinearLayout>
+</ScrollView>

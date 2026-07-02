@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Giám Sát Khu Bếp</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="left-panel">
+        <header>
+            <h5>Hệ Thống Giám Sát Khu Bếp</h5>
+            <p>Sinh viên thực hiện: <b>Nguyễn Mạnh Quang (23161170) - Bùi Đăng Khoa (23161139)</b></p>
+            <h6 id="dongho" class="blue-text" style="font-weight: bold; margin-top: 5px;">Đang tải thời gian...</h6>
+            
+            <div class="district-buttons">
+                <button class="btn blue waves-effect" onclick="switchArea('Khu_bep_1')">Khu Bếp 1</button>
+                <button class="btn blue waves-effect" onclick="switchArea('Khu_bep_2')">Khu Bếp 2</button>
+                <button class="btn blue waves-effect" onclick="switchArea('Khu_bep_3')">Khu Bếp 3</button>
+            </div>
+            
+            <p id="tenKhuHienTai" class="red-text" style="font-weight: bold; margin-top: 5px;">Đang xem: Khu Bếp 1</p>
+        </header>
+
+        <div id="aiWarningBox" class="card-item ai-box" style="transition: all 0.3s ease;">
+            <h6 class="red-text" style="font-weight: bold;">Hệ Thống AI Cảnh Báo (Khu Bếp 1)</h6>
+            <h5 id="aiStatus" class="green-text" style="font-weight: bold;">Bình thường</h5>
+            <p><i>*Dữ liệu đang được phân tích bởi CNN 1D (30s)</i></p>
+        </div>
+
+        <div class="grid-row">
+            <div class="card-item">
+                <h6>Đèn Chiếu Sáng</h6>
+                <svg id="svgBulb" viewBox="0 0 24 24" class="device-img">
+                    <path d="M9 18h6" fill="none" stroke="gray" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M10 22h4" fill="none" stroke="gray" stroke-width="1.5" stroke-linecap="round"/>
+                    <path id="bulbGlass" d="M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6h8c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z" fill="#ffffff" stroke="black" stroke-width="1.5"/>
+                </svg>
+                <p>Sáng: <span id="lightLevelText">0</span>%</p>
+                <input type="range" id="lightSlider" min="0" max="100" step="1" value="0">
+            </div>
+
+            <div class="card-item">
+                <h6>Quạt Thông Gió</h6>
+                <img src="img/quat_thong_gio.jpg" id="quat" class="device-img" alt="Quạt">
+                <div class="controls" style="margin-top: 10px;">
+                    <button type="button" id="btnFanOn" class="btn green waves-effect">ON</button>
+                    <button type="button" id="btnFanOff" class="btn red waves-effect">OFF</button>
+                </div>
+            </div>
+
+            <div class="card-item">
+                <h6>Máy Hút Ẩm</h6>
+                <img src="img/may_hut_am_off.jpg" id="mayHutAm" class="device-img" alt="Máy hút ẩm">
+                <div class="switch" style="margin-top: 10px;">
+                    <label>
+                      Tắt
+                      <input type="checkbox" id="btnDehumToggle">
+                      <span class="lever"></span>
+                      Bật
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-row">
+            <div class="card-item">
+                <h6 style="font-weight: bold; color: #d32f2f">Nhiệt độ</h6>
+                <h4 class="red-text"><span id="nhietdo">--</span>°C</h4>
+            </div>
+            <div class="card-item">
+                <h6 style="font-weight: bold; color: #1976d2">Độ ẩm</h6>
+                <h4 class="blue-text"><span id="doam">--</span>%</h4>
+            </div>
+            <div class="card-item">
+                <h6 style="font-weight: bold; color: #fbc02d">Khí Gas (Butane)</h6>
+                <h4 class="orange-text"><span id="khigas">--</span></h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        
+        <div class="right-box">
+            <h6 class="center-align" style="font-weight: bold; color: #1565c0; margin: 0 0 10px 0;">Hình Ảnh Khu Vực</h6>
+            <div class="image-wrapper">
+                <img src="img/Khu_bep_1.jpg" id="cameraView" alt="Hình ảnh khu vực">
+            </div>
+        </div>
+
+        <div class="right-box">
+            <h6 id="chartTitle" class="center-align" style="font-weight: bold; color: #1565c0; margin: 0 0 10px 0;">Biểu Đồ Thời Gian Thực (1s/lần)</h6>
+            <div class="chart-container">
+                <canvas id="kitchenChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        // 1. Cấu hình Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCc6Rz4WLu3xXO0gP9g90G6VVhBSq5MpFg",
+            authDomain: "tuan-8-c101c.firebaseapp.com",
+            databaseURL: "https://tuan-8-c101c-default-rtdb.firebaseio.com",
+            projectId: "tuan-8-c101c",
+            storageBucket: "tuan-8-c101c.firebasestorage.app",
+            messagingSenderId: "802431412836",
+            appId: "1:802431412836:web:87d414685d8cea477d8d71",
+            measurementId: "G-T15R0XYL13"
+        };
+        firebase.initializeApp(firebaseConfig);
+        
+        window.database = firebase.database();
+        window.currentArea = 'Khu_bep_1'; 
+        window.isSliderDragging = false; 
+        window.globalData = {}; 
+
+        window.areaChartData = {
+            Khu_bep_1: { labels: [], temp: [], hum: [], gas: [] },
+            Khu_bep_2: { labels: [], temp: [], hum: [], gas: [] },
+            Khu_bep_3: { labels: [], temp: [], hum: [], gas: [] }
+        };
+
+        // Hàm cập nhật hiệu ứng phát sáng bóng đèn
+        window.updateBulbVisual = function(value) {
+            const glass = document.getElementById('bulbGlass');
+            document.getElementById('lightLevelText').innerText = value;
+            if (value == 0) {
+                glass.setAttribute('fill', '#ffffff');
+                glass.style.filter = 'none';
+            } else {
+                let blueChannel = 255 - Math.floor((value / 100) * 255);
+                glass.setAttribute('fill', `rgb(255, 235, ${blueChannel})`);
+                let glowIntensity = value / 10;
+                glass.style.filter = `drop-shadow(0px 0px ${glowIntensity}px rgba(255, 235, 0, 0.8))`;
+            }
+        };
+
+        // Cấu hình Biểu đồ (Bật lại mượt mà)
+        var ctx = document.getElementById('kitchenChart').getContext('2d');
+        window.kitchenChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: window.areaChartData['Khu_bep_1'].labels, 
+                datasets: [
+                    { label: 'Nhiệt độ (°C)', data: window.areaChartData['Khu_bep_1'].temp, borderColor: '#ef5350', backgroundColor: 'rgba(239, 83, 80, 0.1)', borderWidth: 2, fill: true, tension: 0.3, spanGaps: true },
+                    { label: 'Độ ẩm (%)', data: window.areaChartData['Khu_bep_1'].hum, borderColor: '#42a5f5', backgroundColor: 'rgba(66, 165, 245, 0.1)', borderWidth: 2, fill: true, tension: 0.3, spanGaps: true },
+                    { label: 'Khí gas (ADC)', data: window.areaChartData['Khu_bep_1'].gas, borderColor: '#fbc02d', backgroundColor: 'rgba(251, 192, 45, 0.1)', borderWidth: 2, fill: true, tension: 0.3, spanGaps: true }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, 
+                animation: {
+                    duration: 500, // Hoàn tất hiệu ứng trong 0.5s để đảm bảo không bị quá tải khi dữ liệu về sau mỗi 1s
+                    easing: 'linear' // Hiệu ứng lướt đều, mượt tay
+                },
+                scales: { x: { ticks: { maxTicksLimit: 10 } }, y: { beginAtZero: false } }
+            }
+        });
+
+        // HÀM CẬP NHẬT GIAO DIỆN (Bao gồm cảnh báo AI)
+        function updateUI() {
+            var data = window.globalData[window.currentArea];
+            if (!data) return;
+
+            // Đổ giá trị cảm biến
+            document.getElementById('nhietdo').innerText = data.nhiet_do !== undefined ? data.nhiet_do : "--";
+            document.getElementById('doam').innerText = data.do_am !== undefined ? data.do_am : "--";
+            document.getElementById('khigas').innerText = data.khi_gas !== undefined ? data.khi_gas : "--";
+
+            // Xử lý quạt
+            let quatImg = document.getElementById('quat');
+            if (data.quat_thong_gio == 1) {
+                quatImg.classList.add('spin-anim');
+            } else {
+                quatImg.classList.remove('spin-anim');
+            }
+
+            // Xử lý máy hút ẩm
+            document.getElementById('mayHutAm').src = (data.may_hut_am == 1) ? 'img/may_hut_am_on.jpg' : 'img/may_hut_am_off.jpg';
+            document.getElementById('btnDehumToggle').checked = (data.may_hut_am == 1);
+
+            // Xử lý thanh trượt đèn
+            if (!window.isSliderDragging) {
+                let lightVal = data.den !== undefined ? data.den : 0;
+                document.getElementById('lightSlider').value = lightVal;
+                window.updateBulbVisual(lightVal);
+            }
+
+            // XỬ LÝ TRẠNG THÁI AI (Khu Bếp 1)
+            if (window.currentArea === 'Khu_bep_1') {
+                let aiStatusEl = document.getElementById('aiStatus');
+                let aiBox = document.getElementById('aiWarningBox');
+                let aiState = data.ai_status || "bình thường"; 
+
+                if (aiState === "cảnh báo cháy") {
+                    aiStatusEl.innerText = "🚨 CẢNH BÁO CHÁY!";
+                    aiStatusEl.className = "red-text";
+                    aiBox.style.borderColor = "red";
+                    aiBox.style.backgroundColor = "#ffebee";
+                } else {
+                    aiStatusEl.innerText = "✅ Bình thường";
+                    aiStatusEl.className = "green-text";
+                    aiBox.style.borderColor = "#4caf50";
+                    aiBox.style.backgroundColor = "#e8f5e9";
+                }
+            }
+        }
+
+        // LẮNG NGHE FIREBASE & CHẠY LOGIC
+        window.database.ref().on('value', snap => {
+            window.globalData = snap.val() || {};
+            
+            let areas = ['Khu_bep_1', 'Khu_bep_2', 'Khu_bep_3'];
+            areas.forEach(area => {
+                let areaData = window.globalData[area];
+                if (areaData) {
+                    let temp = areaData.nhiet_do !== undefined ? areaData.nhiet_do : 0;
+                    let gas = areaData.khi_gas !== undefined ? areaData.khi_gas : 0;
+                    let hum = areaData.do_am !== undefined ? areaData.do_am : 0;
+                    
+                    let updatePayload = {};
+
+                    // Logic tự động bật quạt (Ngưỡng khí gas thô ADC)
+                    if (temp >= 35 || gas >= 800) {
+                        if (areaData.quat_thong_gio !== 1) updatePayload['quat_thong_gio'] = 1;
+                    }
+
+                    // Độ ẩm >= 65 bật hút ẩm, <= 55 tắt hút ẩm
+                    if (hum >= 65) {
+                        if (areaData.may_hut_am !== 1) updatePayload['may_hut_am'] = 1;
+                    } else if (hum <= 55) {
+                        if (areaData.may_hut_am !== 0) updatePayload['may_hut_am'] = 0;
+                    }
+
+                    if (Object.keys(updatePayload).length > 0) {
+                        window.database.ref(area).update(updatePayload);
+                    }
+                }
+            });
+
+            updateUI(); 
+        });
+
+        // HÀM ĐỔI KHU VỰC
+        function switchArea(areaName) {
+            window.currentArea = areaName;
+            var tenKhuText = (areaName === 'Khu_bep_1') ? 'Khu Bếp 1' : (areaName === 'Khu_bep_2') ? 'Khu Bếp 2' : 'Khu Bếp 3';
+            
+            document.getElementById('tenKhuHienTai').innerText = "Đang xem: " + tenKhuText;
+            document.getElementById('chartTitle').innerText = "Biểu Đồ Thời Gian Thực - " + tenKhuText;
+            
+            // Đổi hình nền web & ảnh camera 
+            document.body.style.backgroundImage = "url('img/" + areaName + ".jpg')";
+            document.getElementById('cameraView').src = 'img/' + areaName + '.jpg';
+
+            // Chỉ hiện hộp AI cho Khu bếp 1
+            if (areaName === 'Khu_bep_1') {
+                document.getElementById('aiWarningBox').style.display = 'block';
+            } else {
+                document.getElementById('aiWarningBox').style.display = 'none';
+            }
+
+            window.kitchenChart.data.labels = window.areaChartData[window.currentArea].labels;
+            window.kitchenChart.data.datasets[0].data = window.areaChartData[window.currentArea].temp;
+            window.kitchenChart.data.datasets[1].data = window.areaChartData[window.currentArea].hum;
+            window.kitchenChart.data.datasets[2].data = window.areaChartData[window.currentArea].gas;
+            window.kitchenChart.update();
+
+            updateUI();
+        }
+
+        // ĐỒNG HỒ
+        function updateClock() {
+            var now = new Date();
+            var timeStr = now.toLocaleTimeString('vi-VN');
+            var dateStr = now.toLocaleDateString('vi-VN');
+            document.getElementById('dongho').innerText = timeStr + " | " + dateStr;
+        }
+
+        // LƯU DATA BIỂU ĐỒ TRƯỢT 1s/lần CHO TẤT CẢ KHU VỰC CÙNG LÚC
+        function captureChartData() {
+            let timeStr = new Date().toLocaleTimeString('vi-VN');
+            
+            // Duyệt qua tất cả các khu bếp để đẩy dữ liệu nền liên tục
+            let areasToCapture = ['Khu_bep_1', 'Khu_bep_2', 'Khu_bep_3'];
+            
+            areasToCapture.forEach(area => {
+                let qData = window.globalData[area];
+                if (qData) {
+                    let chartStorage = window.areaChartData[area];
+                    
+                    chartStorage.labels.push(timeStr);
+                    
+                    // Tránh lưu lỗi vào mảng
+                    chartStorage.temp.push(qData.nhiet_do !== undefined ? qData.nhiet_do : null);
+                    chartStorage.hum.push(qData.do_am !== undefined ? qData.do_am : null);
+                    chartStorage.gas.push(qData.khi_gas !== undefined ? qData.khi_gas : null);
+
+                    if (chartStorage.labels.length > 50) {
+                        chartStorage.labels.shift();
+                        chartStorage.temp.shift();
+                        chartStorage.hum.shift();
+                        chartStorage.gas.shift();
+                    }
+                }
+            });
+            
+            // Cập nhật biểu đồ cho khu vực đang xem hiển thị trên giao diện
+            window.kitchenChart.update(); 
+        }
+
+        window.onload = function() {
+            switchArea('Khu_bep_1'); 
+            updateClock();
+            setInterval(updateClock, 1000); 
+            
+            captureChartData(); 
+            setInterval(captureChartData, 1000); 
+        };
+    </script>
+    <script src="functions.js"></script>
+</body>
+</html>

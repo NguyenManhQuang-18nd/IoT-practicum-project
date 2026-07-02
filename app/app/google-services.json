@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "802431412836",
+    "firebase_url": "https://tuan-8-c101c-default-rtdb.firebaseio.com",
+    "project_id": "tuan-8-c101c",
+    "storage_bucket": "tuan-8-c101c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:802431412836:android:b7c0ca390c9228df7d8d71",
+        "android_client_info": {
+          "package_name": "com.example.myapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtsnd--sqPPkxewJTu1pnscoc2cqL0RVI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
